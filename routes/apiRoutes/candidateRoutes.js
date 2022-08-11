@@ -1,10 +1,10 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const db = require("../../db/connection");
-const inputCheck = require("../../utils/inputCheck");
+const db = require('../../db/connection');
+const inputCheck = require('../../utils/inputCheck');
 
 // Get all candidates and their party affiliation
-router.get("/api/candidates", (req, res) => {
+router.get('/candidates', (req, res) => {
   const sql = `SELECT candidates.*, parties.name 
                 AS party_name 
                 FROM candidates 
@@ -17,14 +17,14 @@ router.get("/api/candidates", (req, res) => {
       return;
     }
     res.json({
-      message: "success",
-      data: rows,
+      message: 'success',
+      data: rows
     });
   });
 });
 
 // Get single candidate with party affiliation
-router.get("/api/candidate/:id", (req, res) => {
+router.get('/candidate/:id', (req, res) => {
   const sql = `SELECT candidates.*, parties.name 
                AS party_name 
                FROM candidates 
@@ -39,20 +39,19 @@ router.get("/api/candidate/:id", (req, res) => {
       return;
     }
     res.json({
-      message: "success",
-      data: row,
+      message: 'success',
+      data: row
     });
   });
 });
 
 // Create a candidate
-router.post("/api/candidate", ({ body }, res) => {
-  // Candidate is allowed not to be affiliated with a party
+router.post('/candidate', ({ body }, res) => {
   const errors = inputCheck(
     body,
-    "first_name",
-    "last_name",
-    "industry_connected"
+    'first_name',
+    'last_name',
+    'industry_connected'
   );
   if (errors) {
     res.status(400).json({ error: errors });
@@ -64,7 +63,7 @@ router.post("/api/candidate", ({ body }, res) => {
     body.first_name,
     body.last_name,
     body.industry_connected,
-    body.party_id,
+    body.party_id
   ];
 
   db.query(sql, params, (err, result) => {
@@ -73,17 +72,15 @@ router.post("/api/candidate", ({ body }, res) => {
       return;
     }
     res.json({
-      message: "success",
-      data: body,
-      changes: result.affectedRows,
+      message: 'success',
+      data: body
     });
   });
 });
 
 // Update a candidate's party
-router.put("/api/candidate/:id", (req, res) => {
-  // Candidate is allowed to not have party affiliation
-  const errors = inputCheck(req.body, "party_id");
+router.put('/candidate/:id', (req, res) => {
+  const errors = inputCheck(req.body, 'party_id');
   if (errors) {
     res.status(400).json({ error: errors });
     return;
@@ -92,40 +89,41 @@ router.put("/api/candidate/:id", (req, res) => {
   const sql = `UPDATE candidates SET party_id = ? 
                WHERE id = ?`;
   const params = [req.body.party_id, req.params.id];
+
   db.query(sql, params, (err, result) => {
     if (err) {
       res.status(400).json({ error: err.message });
-      // check if a record was found
     } else if (!result.affectedRows) {
       res.json({
-        message: "Candidate not found",
+        message: 'Candidate not found'
       });
     } else {
       res.json({
-        message: "success",
+        message: 'success',
         data: req.body,
-        changes: result.affectedRows,
+        changes: result.affectedRows
       });
     }
   });
 });
 
 // Delete a candidate
-router.delete("/api/candidate/:id", (req, res) => {
+router.delete('/candidate/:id', (req, res) => {
   const sql = `DELETE FROM candidates WHERE id = ?`;
   const params = [req.params.id];
+
   db.query(sql, params, (err, result) => {
     if (err) {
-      res.statusMessage(400).json({ error: res.message });
+      res.status(400).json({ error: res.message });
     } else if (!result.affectedRows) {
       res.json({
-        message: "Candidate not found",
+        message: 'Candidate not found'
       });
     } else {
       res.json({
-        message: "deleted",
+        message: 'deleted',
         changes: result.affectedRows,
-        id: req.params.id,
+        id: req.params.id
       });
     }
   });
